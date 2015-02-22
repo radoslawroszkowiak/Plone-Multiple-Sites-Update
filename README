@@ -1,15 +1,17 @@
 Python script used to update many Plone Sites within one Plone application at once.
 
 It can work properly only when ran as a Plone instance's script. Its available features are:
-- reinstalling the products (matched by exact name or regular expression)
-- updating the JavaScript and CSS merged compositions (useful after modification of some of the CSS or JS files)
-- rebuilding portal_catalog
-- updating workflow settings
+- Reinstalling the products (matched by exact name or regular expression).
+- Updating the JavaScript and CSS merged compositions (useful after modification of some of the CSS or JS files).
+- Rebuilding portal_catalog.
+- Updating workflow settings.
+- Importing specified steps for the profile.
 
 Example usage:
 $ ./bin/instance run multi_sites_update_tool.py -u reinstall,catalog,workflow -p my.product.
 
-usage: interpreter [-h] [-t TOOLS] [-p PRODUCTS] [-r PRODUCTS_REGEX] [-n]
+usage: interpreter [-h] [-t TOOLS] [-p PRODUCTS] [-r PRODUCTS_REGEX]
+                   [-s IMPORT_STEPS] [-n]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -22,6 +24,9 @@ optional arguments:
                         coma).
   -r PRODUCTS_REGEX, --products-regex PRODUCTS_REGEX
                         Enter the python regexp to match multiple product IDs.
+  -s IMPORT_STEPS, --import-steps IMPORT_STEPS
+                        Enter the IDs of the steps to import for the given
+                        products.
   -n, --no-log          Use this option if you don't want to have the log file
                         created.
 

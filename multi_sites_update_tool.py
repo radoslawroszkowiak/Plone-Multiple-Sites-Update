@@ -197,6 +197,9 @@ class SiteUpdater(object):
         for element in elements:
             methods = ARG_FUNCTION_MAP[element]
             method_set.update(methods.split(','))
+        if 'reinstall_products' in method_set and 'import_steps' in method_set:
+            method_set.remove('import_steps')
+
         return tuple(method_set)
 
     @log_execution
@@ -273,9 +276,16 @@ class SiteUpdater(object):
             for profile in filtered:
                 profile_ids.append('profile-{}'.format(profile['id']))
 
+        if not profile_ids:
+            logger.error(
+                "No products (profiles) to import steps from are specified!")
+
         for profile_id in profile_ids:
             for step_id in self.import_step_ids:
-                portal_setup.runImportStepFromProfile(profile_id, step_id)
+                try:
+                    portal_setup.runImportStepFromProfile(profile_id, step_id)
+                except ValueError as exc:
+                    logger.error('%s in %s' % (exc.message, profile_id))
 
 
 
