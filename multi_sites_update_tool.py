@@ -219,7 +219,7 @@ class SiteUpdater(object):
             for product_id in installed_ids:
                 if self.compiled_products_regex.match(product_id):
                     matched_product_ids.add(product_id)
-        return matched_product_ids
+        return tuple(matched_product_ids)
 
     @log_execution
     def rebuild_catalog(self):
