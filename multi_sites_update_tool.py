@@ -126,14 +126,14 @@ def get_parameters():
     update_args = parser.parse_args()
     chosen_products_args = getattr(update_args, 'products', '')
     chosen_products = chosen_products_args.split(',')
+    chosen_products_regex = getattr(update_args, 'products_regex', None)
     result = {
         'update_args': update_args,
         'no_log_file': getattr(update_args, 'no_log'),
         'elements_to_update': getattr(update_args, 'tools', ''),
         'chosen_products_args': chosen_products_args,
         'chosen_products': chosen_products,
-        'chosen_products_regex': getattr(
-            update_args, 'products_regex', None),
+        'chosen_products_regex': chosen_products_regex
     }
     if result['chosen_products_regex']:
         result['compiled_products_regex'] = re.compile(chosen_products_regex)
