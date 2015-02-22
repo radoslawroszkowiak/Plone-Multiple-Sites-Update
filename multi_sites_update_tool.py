@@ -74,10 +74,11 @@ def log_execution(func):
             elapsed_time = timeit.default_timer() - start
             logger.info(
                 '%s - executed for Plone Site: "%s" in %s seconds.' % (
-                    func.__name__, self.site.id, str(elapsed_time))
+                    func.__name__, self.site.id, str(round(elapsed_time, 3)))
             )
             return result
         except Exception as exc:
+            self.errors = True
             logger.error(
                 'An error occurred while executing "%s" on '
                 'a "%s" Plone Site: "%s"' % (
@@ -277,6 +278,7 @@ class SiteUpdater(object):
                 profile_ids.append('profile-{}'.format(profile['id']))
 
         if not profile_ids:
+            self.errors = True
             logger.error(
                 "No products (profiles) to import steps from are specified!")
 
@@ -285,6 +287,7 @@ class SiteUpdater(object):
                 try:
                     portal_setup.runImportStepFromProfile(profile_id, step_id)
                 except ValueError as exc:
+                    self.errors = True
                     logger.error('%s in %s' % (exc.message, profile_id))
 
 
@@ -302,7 +305,10 @@ def trigger_update():
         setSite(site)
         updater = SiteUpdater(site, **parameters)
         updater()
-    logger.info('All done, Milord!')
+    if getattr(updater, 'errors', False) is not True:
+        logger.info('All done, Milord!')
+    else:
+        logger.error('Some errors occurred. See the log, Milord!')
 
 if __name__ == '__main__':
     trigger_update()
