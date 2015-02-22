@@ -27,6 +27,6 @@ optional arguments:
 
 
 
-options "-p" ("--products") and "-r" ("--products-regex") will be ignored if the "reinstall" or "all" option is not used within the --tools ('-t') parameter.
+Options "-p" ("--products") and "-r" ("--products-regex") will be ignored if the "reinstall" or "all" option is not used within the --tools ('-t') parameter.
 
 If wanted, use this script at your own risk. No warranty!
