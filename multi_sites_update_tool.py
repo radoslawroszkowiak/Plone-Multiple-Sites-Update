@@ -179,6 +179,7 @@ class SiteUpdater(object):
         self.compiled_products_regex = kwargs.get(
             'compiled_products_regex', None)
         self.products_to_reinstall = self.get_products_to_reinstall()
+        self.errors = False
 
     def __call__(self):
         method_list = self.get_method_names_to_run()
@@ -273,7 +274,8 @@ class SiteUpdater(object):
         profile_list = portal_setup.listProfileInfo()
         profile_ids = []
         for product in self.products_to_reinstall:
-            filtered = filter(lambda x: x['product'] == product, profile_list)
+            filtered = [
+                p['product'] for p in profile_list if p['product'] == product]
             for profile in filtered:
                 profile_ids.append('profile-{}'.format(profile['id']))
 
@@ -291,7 +293,6 @@ class SiteUpdater(object):
                     logger.error('%s in %s' % (exc.message, profile_id))
 
 
-
 def trigger_update():
     """
     Main, starting method of the Multiple Plone Site Update Tool.
@@ -300,12 +301,15 @@ def trigger_update():
     if not parameters['no_log_file']:
         add_logger_file_handler()
     sites = get_sites()
+    success = True
     for site in sites:
         logger.info('Starting update of the site: "%s"' % site.id)
         setSite(site)
         updater = SiteUpdater(site, **parameters)
         updater()
-    if getattr(updater, 'errors', False) is not True:
+        if updater.errors is not True:
+            success = False
+    if success is True:
         logger.info('All done, Milord!')
     else:
         logger.error('Some errors occurred. See the log, Milord!')
