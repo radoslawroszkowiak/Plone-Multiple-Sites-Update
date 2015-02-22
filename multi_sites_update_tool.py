@@ -91,6 +91,7 @@ def log_execution(func):
 
 ARG_FUNCTION_MAP = {
     'reinstall': 'reinstall_products',
+    'import': 'import_steps',
     'javascript': 'save_javascripts',
     'css': 'save_css',
     'workflow': 'update_workflow',
@@ -105,7 +106,7 @@ def get_parameters():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-t', '--tools', dest="tools", default="all", type=str,
+        '-t', '--tools', required=True, dest="tools", type=str,
         help="Enter the elements to be updated (separated by coma). "
              "Available forms are: %s" % ', '.join(ARG_FUNCTION_MAP.keys())
     )
@@ -118,12 +119,18 @@ def get_parameters():
         help="Enter the python regexp to match multiple product IDs."
     )
     parser.add_argument(
+        '-s', '--import-steps', dest="import_steps", default='', type=str,
+        help="Enter the IDs of the steps to import for the given products."
+    )
+    parser.add_argument(
         '-n', '--no-log', dest="no_log", action="store_true",
         help="Use this option if you don't want to have the log file created."
     )
     parser.add_argument('-c')  # Passed by the Plone instance
 
     update_args = parser.parse_args()
+    import_step_args = getattr(update_args, 'import_steps', '')
+    import_step_ids = import_step_args.split(',')
     chosen_products_args = getattr(update_args, 'products', '')
     chosen_products = chosen_products_args.split(',')
     chosen_products_regex = getattr(update_args, 'products_regex', None)
@@ -133,7 +140,8 @@ def get_parameters():
         'elements_to_update': getattr(update_args, 'tools', ''),
         'chosen_products_args': chosen_products_args,
         'chosen_products': chosen_products,
-        'chosen_products_regex': chosen_products_regex
+        'chosen_products_regex': chosen_products_regex,
+        'import_step_ids': import_step_ids
     }
     if result['chosen_products_regex']:
         result['compiled_products_regex'] = re.compile(chosen_products_regex)
@@ -166,7 +174,10 @@ class SiteUpdater(object):
         self.elements_to_update = kwargs['elements_to_update']
         self.chosen_products = kwargs['chosen_products']
         self.chosen_products_regex = kwargs['chosen_products_regex']
-        self.compiled_products_regex = kwargs['compiled_products_regex']
+        self.import_step_ids = kwargs['import_step_ids']
+        self.compiled_products_regex = kwargs.get(
+            'compiled_products_regex', None)
+        self.products_to_reinstall = self.get_products_to_reinstall()
 
     def __call__(self):
         method_list = self.get_method_names_to_run()
@@ -193,9 +204,10 @@ class SiteUpdater(object):
         """
         Reinstalls the given products within one Plone Site.
         """
-        product_ids = self.get_products_to_reinstall()
-        self.site.portal_quickinstaller.reinstallProducts(product_ids)
-        logger.info('Reinstalled Products: %s' % ', '.join(product_ids))
+        self.site.portal_quickinstaller.reinstallProducts(
+            self.products_to_reinstall)
+        logger.info('Reinstalled Products: %s' % ', '.join(
+            self.products_to_reinstall))
 
     def get_products_to_reinstall(self):
         """
@@ -247,6 +259,24 @@ class SiteUpdater(object):
         Updates the workflows settings.
         """
         self.site.portal_workflow.updateRoleMappings()
+
+    @log_execution
+    def import_steps(self):
+        """
+        Imports the selected steps for the product(s).
+        """
+        portal_setup = self.site.portal_setup
+        profile_list = portal_setup.listProfileInfo()
+        profile_ids = []
+        for product in self.products_to_reinstall:
+            filtered = filter(lambda x: x['product'] == product, profile_list)
+            for profile in filtered:
+                profile_ids.append('profile-{}'.format(profile['id']))
+
+        for profile_id in profile_ids:
+            for step_id in self.import_step_ids:
+                portal_setup.runImportStepFromProfile(profile_id, step_id)
+
 
 
 def trigger_update():
