@@ -167,7 +167,6 @@ class SiteUpdater(object):
         self.chosen_products = kwargs['chosen_products']
         self.chosen_products_regex = kwargs['chosen_products_regex']
         self.compiled_products_regex = kwargs['compiled_products_regex']
-        logger.info('Starting update of the site: "%s"' % site.id)
 
     def __call__(self):
         method_list = self.get_method_names_to_run()
@@ -259,6 +258,7 @@ def trigger_update():
         add_logger_file_handler()
     sites = get_sites()
     for site in sites:
+        logger.info('Starting update of the site: "%s"' % site.id)
         setSite(site)
         updater = SiteUpdater(site, **parameters)
         updater()
