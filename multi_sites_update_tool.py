@@ -275,9 +275,9 @@ class SiteUpdater(object):
         profile_ids = []
         for product in self.products_to_reinstall:
             filtered = [
-                p['product'] for p in profile_list if p['product'] == product]
+                p['id'] for p in profile_list if p['product'] == product]
             for profile in filtered:
-                profile_ids.append('profile-{}'.format(profile['id']))
+                profile_ids.append('profile-{}'.format(profile))
 
         if not profile_ids:
             self.errors = True
@@ -307,7 +307,7 @@ def trigger_update():
         setSite(site)
         updater = SiteUpdater(site, **parameters)
         updater()
-        if updater.errors is not True:
+        if updater.errors is True:
             success = False
     if success is True:
         logger.info('All done, Milord!')
