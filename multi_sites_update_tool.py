@@ -22,6 +22,7 @@ import re
 import timeit
 import transaction
 
+from collections import OrderedDict
 from zope.component.hooks import setSite
 
 # setting up the logger
@@ -90,14 +91,15 @@ def log_execution(func):
 
 # parsing the command line arguments
 
-ARG_FUNCTION_MAP = {
-    'reinstall': 'reinstall_products',
-    'import': 'import_steps',
-    'javascript': 'save_javascripts',
-    'css': 'save_css',
-    'workflow': 'update_workflow',
-    'catalog': 'rebuild_catalog',
-}
+ARG_FUNCTION_MAP = OrderedDict((
+    ('reinstall', 'reinstall_products'),
+    ('import', 'import_steps'),
+    ('javascript', 'save_javascripts'),
+    ('css', 'save_css'),
+    ('workflow', 'update_workflow'),
+    ('catalog', 'rebuild_catalog')
+))
+
 ARG_FUNCTION_MAP['all'] = ','.join(ARG_FUNCTION_MAP.values())
 
 
@@ -184,7 +186,7 @@ class SiteUpdater(object):
     def __call__(self):
         method_list = self.get_method_names_to_run()
         logger.info('Actions that will be taken for the "%s" site: %s.\n' % (
-            self.site.id, ', '.join(sorted(method_list))
+            self.site.id, ', '.join(method_list)
         ))
         for meth_name in method_list:
             getattr(self, meth_name)()
@@ -312,6 +314,7 @@ def trigger_update():
         updater()
         if updater.errors is True:
             success = False
+        logger.info('Update of the site: "%s" completed.\n\n======\n' % site.id)
     if success is True:
         logger.info('All done, Milord!')
     else:
