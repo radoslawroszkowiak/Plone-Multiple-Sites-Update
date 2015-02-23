@@ -288,6 +288,9 @@ class SiteUpdater(object):
             for step_id in self.import_step_ids:
                 try:
                     portal_setup.runImportStepFromProfile(profile_id, step_id)
+                    logger.info('Imported step "%s" in Plone Site: "%s"' % (
+                        step_id, self.site.id
+                    ))
                 except ValueError as exc:
                     self.errors = True
                     logger.error('%s in %s' % (exc.message, profile_id))
