@@ -98,7 +98,6 @@ ARG_FUNCTION_MAP = OrderedDict((
     ('css', 'save_css'),
     ('workflow', 'update_workflow'),
     ('catalog', 'rebuild_catalog'),
-    ('upgrade', 'upgrade_steps')
 ))
 
 ARG_FUNCTION_MAP['all'] = ','.join(ARG_FUNCTION_MAP.values())
@@ -239,15 +238,6 @@ class SiteUpdater(object):
                 if self.compiled_products_regex.match(product_id):
                     matched_product_ids.add(product_id)
         return tuple(matched_product_ids)
-
-    @log_execution
-    def upgrade_steps(self):
-        """
-        Runs the upgrade step.
-        """
-        products = self.get_products_to_reinstall()
-        for product in products:
-            self.site.portal_quickinstaller.upgradeProduct(product)
 
     @log_execution
     def rebuild_catalog(self):
